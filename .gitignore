@@ -1,0 +1,5 @@
+**/build/*
+**/latex/*
+!**/latex/*.tex
+!**/latex/*.bib
+!**/Fig
