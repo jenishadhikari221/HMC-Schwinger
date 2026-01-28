@@ -1,6 +1,6 @@
 
 compile:
-	g++ -o ../build/uebung1 main.cpp ../src/uebung1.cpp
+	g++ -o ../build/main hmc.cpp ../src/hmc.cpp
 
 clean:
 	rm -f nothing
