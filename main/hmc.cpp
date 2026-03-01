@@ -5,51 +5,40 @@
 #include<iostream>
 #include<fstream>
 #include<functional>
+#include <highfive/H5Easy.hpp>
 
+using H5Easy::File ;
 using complex = std::complex<double>;
 
-std::string filename;
+
+
 
 int main(int argc, char *argv[]){
-    size_t seed = 1234567;
+    size_t seed = 1234567890122;
     std::mt19937 gen(seed);
-    int L = 3;
-    double m0 = 1;
+    int L = 5;
+    double m0 = 1.0;
+
+    std::string file_path = "../data/";
+    std::string filename;
+   int configs = 20; int  MD_steps = 25; int MD_trajectory_length = 1; double beta = 1.0;
+
+    
+   GetUserParam(argc,argv,filename,MD_trajectory_length,MD_steps,configs,L);
+   
+    filename = file_path + filename ; 
+    File file(filename, File::ReadWrite|File::Truncate);
 
     std::vector<std::vector<std::vector<complex>>> lattice(L,std::vector<std::vector<complex>>(L,std::vector<complex>(2)));
     
     creat_lattice(lattice,L,gen);
     
-    std::vector<std::vector<std::vector<complex>>> test_chi(L,std::vector<std::vector<complex>>(L,std::vector<complex>(2)));
-    std::vector<std::vector<std::vector<complex>>> test_phi(L,std::vector<std::vector<complex>>(L,std::vector<complex>(2)));
-
-    generate_Phi(test_chi,gen);
-    test_phi = f_M(test_chi,lattice,m0);
-    complex test;
-    complex test_2;
-
-    //std::vector<std::vector<std::vector<complex>>> inverse = cg(f_M_f_Mdag,test_phi,lattice,m0,100,1e-10);
-    
-/*/ check if M and M_dagger diagonal element match
-
-
-    std::vector<std::vector<std::vector<complex>>> v(L,std::vector<std::vector<complex>>(L,std::vector<complex>(2,complex(1.0,0.0))));
-    std::vector<std::vector<std::vector<complex>>> ferm ;
-    std::vector<std::vector<std::vector<complex>>> fermd;
-    for (int t = 0; t < L; t++) {      
-        for (int x = 0; x < L; x++) {
-            for(int m = 0;m<2;m++){
-                ferm = f_M(v,lattice,m0);
-                fermd = f_Mdag(v,lattice,m0);
-                
-                std::cout<<":t"<<t<<",x "<<x<<"  "<<ferm[t][x][m]<< " "<<fermd[t][x][m]<<" \n";
-            }
-        }
-        
-    } /**/  
-   int configs = 20; int MD_steps = 20; int MD_trajectory_length = 1; double beta = 1;
-   HMC(lattice,configs,MD_steps,MD_trajectory_length,gen,beta,m0);
-    
+  // for(int i{0}; i < 10; i++){ 
+    HMC(lattice,configs,MD_steps,MD_trajectory_length,gen,beta,m0,file);
+   //check_leapfrog(argc,argv,lattice,gen);
+   //check_hermitian(lattice,gen);
+   
+  // }
     
     return 0;
 }
