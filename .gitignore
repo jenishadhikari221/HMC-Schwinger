@@ -3,3 +3,4 @@
 !**/latex/*.tex
 !**/latex/*.bib
 !**/Fig
+**/__pycache__
