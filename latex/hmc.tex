@@ -21,12 +21,12 @@ in a way that makes them amenable to numerical Monte Carlo simulations. This app
 for investigating phenomena such as confinement, mass generation, and chiral symmetry breaking.
 
 As an introduction to lattice gauge theory methods, this project studies the two-dimensional Schwinger model, 
-which is Quantum Electrodynamics (QED) in 1+1 dimensions with gauge group $U(1)U(1)$. Although significantly simpler than 
+which is Quantum Electrodynamics (QED) in 1+1 dimensions with gauge group $U(1)$. Although significantly simpler than
 4-D QCD, the Schwinger model shares many important qualitative features with non-abelian gauge theories.
 In particular, it exhibits confinement, topological sectors, etc. One major advantage of the Schwinger model is its reduced dimensionality. 
 In 1+1 dimensions, gauge degrees of freedom are highly constrained by Gauss’ law, simplifying both the analytical structure of the theory and 
 its numerical implementation. Despite this simplicity, the model retains essential conceptual ingredients of LQCD, including gauge invariance, 
-compact link variables, fermion discretization issues, and the need for importance sampling algorithms such as Hybrid/Hamiltion Monte Carlo (HMC).
+compact link variables, fermion discretization issues, and the need for importance sampling algorithms such as Hybrid/Hamilton Monte Carlo (HMC).
 
 In this project, the continuum Schwinger model is formulated on a Euclidean space-time lattice using compact $U(1)$ gauge links. 
 The Wilson gauge action is employed, and the path integral is evaluated numerically using Monte Carlo techniques. Key observables such as 
@@ -43,7 +43,7 @@ Finally, the procedures for data analysis and the results obtained from the nume
 
 \section{Theory}
 \subsection{QFT}
-Let's consider the quantum field theory of QED, the langragian density (later simply langragian) is givien as \cref{eqn:qed_full}.
+Let's consider the quantum field theory of QED, the Lagrangian density (later simply Lagrangian) is given as \cref{eqn:qed_full}.
 
 \begin{equation}\label{eqn:qed_full}
     \mathcal{L}\big(\bar{\psi},\psi,A_\mu\big)
@@ -52,14 +52,14 @@ Let's consider the quantum field theory of QED, the langragian density (later si
     \bar{\psi}^{(f)}(x)\Big[\gamma^\mu i \big(\partial_\mu + i g A_\mu(x)\big) - m\Big]\psi^{(f)}(x)
     -\frac{1}{4} F_{\mu\nu}(x)F^{\mu\nu}(x)
 \end{equation}
-In Path Integral formalisim an expectation value is given by
+In Path Integral formalism an expectation value is given by
 \begin{equation}
     \langle O \rangle = \frac{1}{Z} \int \mathcal{D}A_\mu\mathcal{D}\psi\mathcal{D}\bar{\psi} O[A_\mu,\psi,\bar{\psi}] e^{iS}
 \end{equation}
 \begin{equation}
     Z = \int \mathcal{D}A_\mu\mathcal{D}\psi\mathcal{D}\bar{\psi} e^{iS}
 \end{equation}
-After permofing a Wick's rotation \cref{eqn:wick_rot} the action becomes \cref{eqn:action_E}\footnote{Note the gamma matrices changes after rotation.}.
+After performing a Wick's rotation \cref{eqn:wick_rot} the action becomes \cref{eqn:action_E}\footnote{Note the gamma matrices change after rotation.}.
 
 \begin{align}
     S &= \int d^4x \mathcal {L} \\
@@ -77,14 +77,14 @@ Gauge fields are represented by compact link variables
 U_\mu(n) = e^{iA\mu(n)} \in U(1)
 \end{equation}
 defined on links between lattice sites $n$ and $n + \mu$.
-For 2D-Schwinger model the fermion matrix read as,
+For 2D-Schwinger model the fermion matrix reads as,
 
 \begin{equation}
      M[n',n]^{\alpha\beta} = (m_0+2)\delta^{\alpha\beta}\delta_{n',n} -\frac{1}{2}\sum\limits_{\mu=0}^{1}\{(1-\sigma_\mu)^{\alpha\beta}U_{\mu}(n')\delta_{n'+\mu,n} +
         (1+\sigma_\mu)^{\alpha\beta}U^{\dagger}_{\mu}(n'-\mu)\delta_{n'-\mu,n}  \},
 \end{equation}
-where $\sigma$ are Pauli sigma matrix. Now the action can be sperated in purge gauge part and fermion part as \cref{eqn:disc_action}. 
-In limit $a \to 0$ the continuum field langragian is obtained~\cite{gupta1998introduction}. 
+where $\sigma$ are Pauli sigma matrices. Now the action can be separated into pure gauge part and fermion part as \cref{eqn:disc_action}. 
+In limit $a \to 0$ the continuum field Lagrangian is obtained~\cite{gupta1998introduction}. 
 \begin{align}\label{eqn:disc_action}
     S_G &= \beta\sum_{n\in \Lambda}\sum_{\mu<\nu} \mathcal{R}Tr(1-P_{\mu\nu}(n))\\
     S_F &= \bar{\psi} M \psi
@@ -102,12 +102,15 @@ as $(M^\dagger M)^{-1} \eta$ with $ \eta = M^\dagger \chi$, where $\chi \sim \ma
 
 \section{Simulation}
 We want to sample from the distribution $e^{-S_E}$. A local Metropolis update is extremely expensive 
-due to dynamical fermion matrix and suffers from larger autocorrelation. To generate gauge configurations of desired distributed, 
+due to dynamical fermion matrix and suffers from larger autocorrelation. To generate gauge configurations of desired distribution, 
 we use the Hybrid Monte Carlo algorithm and implement global Metropolis update.
 
+Check $M^\dagger M$ is hermitian by implementing $\langle a, Mb \rangle -
+\langle M^\dagger a, b \rangle$, which agrees within numerical uncertainty, i.e., $ \mathcal{O}(e^{-13}) $. Thus $M^\dagger$ 
+is hermitian. With the test of $\langle M^\dagger Ma, a \rangle$ the scalar product shows positive real values within numerical error, thus $M^\dagger M$ is positive definite.
+
 \subsection{Hamiltonian Formulation}
-Once we add a fictitious conjugate momenta $P_\mu(x)$ for each gauge link, $S_E \to H$. Now, we have a Gaussian
-integral, which can be calculated analytically. Thus the addition of momentum doesn't affect the expectation value, due to same contirbution 
+Once we add a fictitious conjugate momenta $P_\mu(x)$ for each gauge link, $S_E \to H$. Now, we have a Gaussian integral, which can be calculated analytically. Thus the addition of momentum doesn't affect the expectation value due to the same contribution 
 in numerator and denominator.
 \begin{equation}
 H = \sum_{x,\mu} \frac{1}{2} P_\mu(x)^2 
@@ -130,7 +133,7 @@ according to Hamilton's equation of motion:
 - \frac{\partial S_{\text{eff}}}{\partial \theta_\mu(x)},
 \end{align}
 
-The total force can be splited into
+The total force can be split into
 \begin{equation}
 - \frac{\partial S_{\text{eff}}}{\partial \theta_\mu(x)}= F = F_g + F_f,
 \end{equation}
@@ -148,14 +151,48 @@ using the leapfrog integrator, which is symplectic,
 time-reversible, and area-preserving. The integrator introduces $\mathcal{O}(\epsilon^2)$ errors,
 which are corrected by the Metropolis step.
 
-\subsection{Hamiltion Monte Carlo}
+To test the correctness of the algorithm the momentum was flipped (sign changed) and the MD was computed again. The difference between initial and final gauge field agrees within numerical uncertainties, i.e., the difference is on the order of $10^{-13}$.
 
-After a trajectory, compute the new Hamiltonian $H_{\text{new}}$.
-The configuration is accepted with probability
-\begin{equation}
-P_{\text{acc}} =
-\min\left(1, e^{-(H_{\text{new}} - H_{\text{old}})} \right).
-\end{equation}
+\subsection{Hamiltonian Monte Carlo}
+
+The Hamiltonian Monte Carlo (HMC) algorithm combines molecular dynamics evolution with the Metropolis acceptance criterion. 
+This approach generates statistically independent gauge configurations while efficiently exploring the configuration space.
+
+
+The HMC algorithm possesses several desirable properties:
+
+\begin{itemize}
+    \item \textbf{Exact sampling:} In the limit of infinitesimal step size ($\epsilon \to 0$), HMC samples exactly from the desired distribution $e^{-S_{\text{eff}}}$.
+    
+    \item \textbf{Reduced autocorrelation:} Global moves in configuration space lead to smaller autocorrelation times compared to local algorithms like Metropolis.
+    
+    \item \textbf{High acceptance rate:} The symplectic integrator preserves the phase-space volume, leading to acceptance rates typically $> 50\%$ for well-tuned parameters.
+    
+    \item \textbf{Ergodicity:} The algorithm explores the entire configuration space with positive probability, ensuring proper sampling of all sectors.
+\end{itemize}
+The algorithm proceeds as follows:
+
+\begin{algorithm}[H]
+    \caption{Hamiltonian Monte Carlo Algorithm}
+    \begin{algorithmic}[1]
+        \State Initialize gauge links $\{U_\mu(n)\}$ and momenta $\{P_\mu(n)\}$
+        \For{$i = 1$ to $N_{\text{traj}}$}
+            \State Generate pseudofermions from Gaussian distribution: $\Phi \sim \mathcal{N}(0, I)$
+            \State Sample random momenta: $P_\mu(n) \sim \mathcal{N}(0, 1)$ for all links
+            \State Calculate initial Hamiltonian: $H_{\text{old}} = H[U, P]$
+            \State Evolve system for $\tau$ trajectory time using leapfrog integrator (see below)
+            \State Calculate final Hamiltonian: $H_{\text{new}} = H[U', P']$
+            \State Compute acceptance probability: $\alpha = \min(1, e^{-(H_{\text{new}} - H_{\text{old}})})$
+            \If{$\text{rand}() < \alpha$}
+                \State Accept new configuration: $U \leftarrow U'$, $P \leftarrow P'$
+            \Else
+                \State Reject and keep current configuration
+            \EndIf
+            \State Measure observables from current configuration
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}
+
 
 \include{analysis.tex}
 
