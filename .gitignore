@@ -4,3 +4,4 @@
 !**/latex/*.bib
 !**/Fig
 **/__pycache__
+!**/Makefile
