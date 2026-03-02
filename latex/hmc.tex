@@ -17,27 +17,22 @@
 \label{sec:intro}
 Lattice Quantum Chromodynamics (LQCD) provides a non-perturbative framework for studying strongly interacting gauge 
 theories from first principles. By discretizing space-time onto a finite lattice, quantum field theories can be formulated 
-in a way that makes them amenable to numerical Monte Carlo simulations. This approach has become one of the most powerful tools 
-for investigating phenomena such as confinement, mass generation, and chiral symmetry breaking.
+in a way that makes them amenable to numerical Monte Carlo simulations. 
 
-As an introduction to lattice gauge theory methods, this project studies the two-dimensional Schwinger model, 
-which is Quantum Electrodynamics (QED) in 1+1 dimensions with gauge group $U(1)$. Although significantly simpler than
+As an introduction to LQCD methodology, this project studies the 2D-Schwinger model, 
+which is field theory of QED in 1+1 dimensions with gauge group $U(1)$. Although significantly simpler than
 4-D QCD, the Schwinger model shares many important qualitative features with non-abelian gauge theories.
 In particular, it exhibits confinement, topological sectors, etc. One major advantage of the Schwinger model is its reduced dimensionality. 
 In 1+1 dimensions, gauge degrees of freedom are highly constrained by Gauss’ law, simplifying both the analytical structure of the theory and 
 its numerical implementation. Despite this simplicity, the model retains essential conceptual ingredients of LQCD, including gauge invariance, 
 compact link variables, fermion discretization issues, and the need for importance sampling algorithms such as Hybrid/Hamilton Monte Carlo (HMC).
 
-In this project, the continuum Schwinger model is formulated on a Euclidean space-time lattice using compact $U(1)$ gauge links. 
-The Wilson gauge action is employed, and the path integral is evaluated numerically using Monte Carlo techniques. Key observables such as 
-the plaquette expectation value and topological charge are measured to study equilibration, confinement properties, etc.
 
-The methodology developed here closely parallels that used in full LQCD simulations. Although the gauge group is abelian and the dimensionality 
-is reduced, the essential computational framework, gauge action construction, fermion integration, and Markov-chain 
-sampling can be directly generalized to $SU(N)$ gauge theories, including realistic QCD. Thus, this project serves as a conceptual introduction 
-to lattice field theory. This report begins with a brief overview of the theoretical background of the field theory, followed by a description of 
+This report is not an original work, unless mention otherwise concpents and methodology are taken directly from~\cite{gupta1998introduction}.
+This report begins with a brief overview of the theoretical background of the field theory, followed by a description of 
 its lattice formulation. The simulation methodology, including the implementation of the Hybrid Monte Carlo algorithm, is then presented. 
-Finally, the procedures for data analysis and the results obtained from the numerical simulations are discussed.
+Finally, the procedures for data analysis and the results obtained from the numerical simulations are discussed. 
+The source code of the simulation and the tests of the implemented algorithms can be found in~\cite{jenish_github}.
 
 
 
@@ -83,17 +78,19 @@ For 2D-Schwinger model the fermion matrix reads as,
      M[n',n]^{\alpha\beta} = (m_0+2)\delta^{\alpha\beta}\delta_{n',n} -\frac{1}{2}\sum\limits_{\mu=0}^{1}\{(1-\sigma_\mu)^{\alpha\beta}U_{\mu}(n')\delta_{n'+\mu,n} +
         (1+\sigma_\mu)^{\alpha\beta}U^{\dagger}_{\mu}(n'-\mu)\delta_{n'-\mu,n}  \},
 \end{equation}
-where $\sigma$ are Pauli sigma matrices. Now the action can be separated into pure gauge part and fermion part as \cref{eqn:disc_action}. 
-In limit $a \to 0$ the continuum field Lagrangian is obtained~\cite{gupta1998introduction}. 
+where $\sigma$ are Pauli sigma matrices. The action can be separated into pure gauge part and fermion part as \cref{eqn:disc_action}. 
+In limit $a \to 0$ the continuum field Lagrangian is obtained~\cite{gupta1998introduction}. The fermionic action is implemented with 
+anti-periodic(periodic) boundary conditions in temporal(spatial)-direction~\cite{rothe2012lattice}.
 \begin{align}\label{eqn:disc_action}
     S_G &= \beta\sum_{n\in \Lambda}\sum_{\mu<\nu} \mathcal{R}Tr(1-P_{\mu\nu}(n))\\
     S_F &= \bar{\psi} M \psi
 \end{align}
 
 Consider the path integral, using properties of Grassmann number \cref{eq:grassmann_rules} the fermion field can be integrated out to \cref{eqn:only_gaugePart}. 
-In numerical methods we want to sample from the distribution, computing the determinant scales complexity with  $\mathcal{O}(n!)$ and space with
-$\mathcal{O}(n^2)$, where $n$ is the volume of the lattice. We can implement $M^\dagger M \chi$ as a vector and solve linear equation to get inverse
-as $(M^\dagger M)^{-1} \eta$ with $ \eta = M^\dagger \chi$, where $\chi \sim \mathcal{N}(0,2)$
+In numerical methods we want to sample from the distribution, computing the determinant scales complexity with  $\mathcal{O}(n^3)$ at best and space with
+$\mathcal{O}(n^2)$, where $n$ is the volume of the lattice. One can implement $M^\dagger M \chi$ as a vector and solve linear equation
+with conjugate gradient (CG)~\cite{lecturenote} to get inverse
+as $(M^\dagger M)^{-1} \eta$ with $ \eta = M^\dagger \chi$, where $\chi \sim \mathcal{N}(0,1)$
 \begin{align}
     \langle \mathcal{O} \rangle &= \frac{1}{Z} \int \mathcal{D}A_\mu\mathcal{D}\psi\mathcal{D}\bar{\psi} \mathcal{O}[A_\mu,\psi,\bar{\psi}] e^{-S_G - S_F}\\
      &= \frac{1}{Z} \int \mathcal{D}A_\mu \mathcal{O}[A_\mu] \det(M^\dagger M) e^{-S_G} \label{eqn:only_gaugePart}\\
@@ -101,22 +98,23 @@ as $(M^\dagger M)^{-1} \eta$ with $ \eta = M^\dagger \chi$, where $\chi \sim \ma
 \end{align}
 
 \section{Simulation}
-We want to sample from the distribution $e^{-S_E}$. A local Metropolis update is extremely expensive 
-due to dynamical fermion matrix and suffers from larger autocorrelation. To generate gauge configurations of desired distribution, 
-we use the Hybrid Monte Carlo algorithm and implement global Metropolis update.
+To sample from the distribution $e^{-S_E}$ a local Metropolis update is extremely expensive 
+due to global nature of fermion matrix and suffers from larger autocorrelation. To generate gauge configurations of desired distribution, 
+one uses the Hybrid Monte Carlo algorithm and implement global Metropolis update.
 
-Check $M^\dagger M$ is hermitian by implementing $\langle a, Mb \rangle -
-\langle M^\dagger a, b \rangle$, which agrees within numerical uncertainty, i.e., $ \mathcal{O}(e^{-13}) $. Thus $M^\dagger$ 
-is hermitian. With the test of $\langle M^\dagger Ma, a \rangle$ the scalar product shows positive real values within numerical error, thus $M^\dagger M$ is positive definite.
+One can check $M^\dagger$ is implemented correctly by $\langle a, Mb \rangle -
+\langle M^\dagger a, b \rangle$, which agreed within numerical uncertainty, of $ \mathcal{O}(e^{-13}) $. Thus $M^\dagger$ 
+is adjoint matirx of $M$. With the test of $\langle M^\dagger Ma, a \rangle$ the scalar product shows positive real values within numerical error, thus $M^\dagger M$ is positive definite.
+The convergence of CG-algorithm within given max iteration provides inverse of $M\dagger M$.
 
 \subsection{Hamiltonian Formulation}
-Once we add a fictitious conjugate momenta $P_\mu(x)$ for each gauge link, $S_E \to H$. Now, we have a Gaussian integral, which can be calculated analytically. Thus the addition of momentum doesn't affect the expectation value due to the same contribution 
+Once a fictitious conjugate momenta $P_\mu(x)$ for each gauge link is addesd $S_E \to H$.
+The integrand thus becomes a Gaussian integral, which can be calculated analytically. The addition of the momentum doesn't affect the expectation value due to the same contribution 
 in numerator and denominator.
 \begin{equation}
 H = \sum_{x,\mu} \frac{1}{2} P_\mu(x)^2 
 + S_{\text{eff}}[U].
 \end{equation}
-
 The partition function becomes
 \begin{equation}
 Z = \int \mathcal{D}U\, \mathcal{D}P \;
@@ -135,60 +133,48 @@ according to Hamilton's equation of motion:
 
 The total force can be split into
 \begin{equation}
-- \frac{\partial S_{\text{eff}}}{\partial \theta_\mu(x)}= F = F_g + F_f,
+- \frac{\partial S_{\text{eff}}}{\partial \theta_\mu(x)}= F = F_G + F_F,
 \end{equation}
 where $F_G$ is the gauge force and $F_F$ is the fermionic force.
 
 \begin{align}
-    F_G = -\beta \Im[U_\mu(n)K_\mu(n)] &   \\
+    F_G^\mu = -\beta \Im[U_\mu(n)K_\mu(n)] &   \\
 \textrm{with } K_\mu(n) = U_\nu(n+\mu)U_\mu^\dagger(n+\nu)U_\nu^\dagger(n) &+ U_\nu^\dagger(n+\mu-\nu) U_\mu^\dagger(n-\nu)U_\nu(n-\nu)|_{\mu \neq \nu } \\
-F_F = \Im[\chi^\dagger(n)(1-\sigma_\mu)U_\mu(n)\xi(n+\mu) &- \chi^\dagger(n+\mu)(1+ \sigma_\mu)U_\mu^\dagger(n)\xi(n)]\\
+F_F^\mu = \Im[\chi^\dagger(n)(1-\sigma_\mu)U_\mu(n)\xi(n+\mu) &- \chi^\dagger(n+\mu)(1+ \sigma_\mu)U_\mu^\dagger(n)\xi(n)]\\
 \textrm{with } \xi = (M^\dagger M)^{-1}\Phi \textrm{ and } \chi = M \xi
 \end{align}
 
 The molecular dynamics equations are solved numerically
 using the leapfrog integrator, which is symplectic,
-time-reversible, and area-preserving. The integrator introduces $\mathcal{O}(\epsilon^2)$ errors,
-which are corrected by the Metropolis step.
+time-reversible, and area-preserving~\cite{lecturenote}. The integrator introduces $\mathcal{O}(\epsilon^2)$ errors.
 
-To test the correctness of the algorithm the momentum was flipped (sign changed) and the MD was computed again. The difference between initial and final gauge field agrees within numerical uncertainties, i.e., the difference is on the order of $10^{-13}$.
+To test the correctness of the Leapfrog-algorithm the momentum was flipped (i.e. sign changed) after MD and the MD was computed once again. 
+The difference between initial and final gauge field agrees within numerical uncertainties $\mathcal{O}(10^{-13})$.
 
 \subsection{Hamiltonian Monte Carlo}
 
-The Hamiltonian Monte Carlo (HMC) algorithm combines molecular dynamics evolution with the Metropolis acceptance criterion. 
+The Hamiltonian Monte Carlo (HMC)~\cref{algorithm:HMC} combines molecular dynamics evolution with the Metropolis accept/reject, which
+fulfills detailled balance condition. 
 This approach generates statistically independent gauge configurations while efficiently exploring the configuration space.
 
 
-The HMC algorithm possesses several desirable properties:
-
-\begin{itemize}
-    \item \textbf{Exact sampling:} In the limit of infinitesimal step size ($\epsilon \to 0$), HMC samples exactly from the desired distribution $e^{-S_{\text{eff}}}$.
-    
-    \item \textbf{Reduced autocorrelation:} Global moves in configuration space lead to smaller autocorrelation times compared to local algorithms like Metropolis.
-    
-    \item \textbf{High acceptance rate:} The symplectic integrator preserves the phase-space volume, leading to acceptance rates typically $> 50\%$ for well-tuned parameters.
-    
-    \item \textbf{Ergodicity:} The algorithm explores the entire configuration space with positive probability, ensuring proper sampling of all sectors.
-\end{itemize}
-The algorithm proceeds as follows:
 
 \begin{algorithm}[H]
-    \caption{Hamiltonian Monte Carlo Algorithm}
+    \caption{Hamiltonian Monte Carlo Algorithm}\label{algorithm:HMC}
     \begin{algorithmic}[1]
-        \State Initialize gauge links $\{U_\mu(n)\}$ and momenta $\{P_\mu(n)\}$
+        \State Initialize $U_\mu(n) \in U(1)$ and $P_\mu(n)\in \mathcal{N}(0, 1) $
         \For{$i = 1$ to $N_{\text{traj}}$}
-            \State Generate pseudofermions from Gaussian distribution: $\Phi \sim \mathcal{N}(0, I)$
-            \State Sample random momenta: $P_\mu(n) \sim \mathcal{N}(0, 1)$ for all links
+            \State Generate pseudofermions: $\Phi = M^\dagger \chi\qquad \chi \sim \mathcal{N}(0, 1)$
+            \State Sample random momenta: $P_\mu(n) \sim \mathcal{N}(0, 1)$ 
             \State Calculate initial Hamiltonian: $H_{\text{old}} = H[U, P]$
-            \State Evolve system for $\tau$ trajectory time using leapfrog integrator (see below)
+            \State Evolve system for $\tau$ trajectory time using leapfrog integrator 
             \State Calculate final Hamiltonian: $H_{\text{new}} = H[U', P']$
             \State Compute acceptance probability: $\alpha = \min(1, e^{-(H_{\text{new}} - H_{\text{old}})})$
-            \If{$\text{rand}() < \alpha$}
+            \If{$\mathcal{R}[0,1] < \alpha$}
                 \State Accept new configuration: $U \leftarrow U'$, $P \leftarrow P'$
             \Else
                 \State Reject and keep current configuration
             \EndIf
-            \State Measure observables from current configuration
         \EndFor
     \end{algorithmic}
 \end{algorithm}

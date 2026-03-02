@@ -1,15 +1,13 @@
 \section{Analysis}
-
-\subsection{Equilibration and Convergence}
-
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[width = \textwidth]{runnig_mean_4x4.png}
     \caption{Running mean of Plaquette for 4x4-Lattice.}
     \label{fig:run_mean_4_L}
 \end{figure}
 
-The equilibration of the simulated system is a crucial first step in numerical lattice simulations. \cref{fig:run_mean_4_L} shows the running mean of the plaquette, which is one of the most fundamental observables in lattice gauge theory. 
+The equilibration of the simulated system is a crucial first step in numerical lattice simulations. 
+\Cref{fig:run_mean_4_L} shows the running mean of the plaquette.
 The plaquette $P_{\mu\nu}(n)$ measures the product of link variables around an elementary square on the lattice:
 \begin{equation}
     P_{\mu\nu}(n) = \text{Re}[U_\mu(n)U_\nu(n+\mu)U_\mu^\dagger(n+\nu)U_\nu^\dagger(n)]
@@ -18,58 +16,49 @@ The plaquette $P_{\mu\nu}(n)$ measures the product of link variables around an e
 The running mean demonstrates that the system rapidly converges to its equilibrium value within the first few hundred trajectories. 
 The initial transient behavior, where the plaquette value drifts from its starting configuration, indicates that the system is thermalizing. 
 Once the running mean stabilizes, the system has reached thermal equilibrium and subsequent measurements represent independent samples from the desired distribution. 
-For the 4x4 lattice, equilibration is achieved relatively quickly, allowing reliable statistical analysis of the remaining data.
+Similar observation can be seen for different lattice size \cref{fig:run_mean_5_L} and \cref{fig:run_mean_6_L}
 
 \subsection{Topological Charge Evolution}
-
-\begin{figure}
+The integer-valued topological charge functional for 2D- Schwinger model is given by~\cite{elser1997topological},
+\begin{equation}
+Q\;=\; \frac{1}{2\pi}\int d^{2}x\;F_{01}(x)\,.
+\end{equation}
+One can measure the discreet topological charge with
+\begin{equation} \label{eqn:discreet_Q}
+Q=\frac{1}{2\pi}\sum_{n \in \Lambda}\arg P_{\mu\nu}(n)
+\end{equation}
+\begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Q_4.png}
     \caption{Topological charge for 4x4-Lattice}
     \label{fig:Q_4_L}
 \end{figure}
 
-The topological charge $Q$ measures the winding of the gauge field configuration and is a conserved quantity in quantum field theory. 
-\Cref{fig:Q_4_L} displays the time evolution of the topological charge during the HMC simulation. 
-The key observation is that the topological charge fluctuates between different integer values, 
+\Cref{fig:Q_4_L}, \cref{fig:Q_5_L} and \cref{fig:Q_6_L} displays the distribution of the topological charge from the HMC simulation. 
+One can observe that, the topological charge fluctuates between different integer values, 
 demonstrating that the HMC algorithm successfully tunnels between distinct topological sectors.
 
-This behavior is highly desirable and contrasts sharply with some local update algorithms that become frozen in a single topological sector. 
+This behavior is highly desirable and contrasts sharply with some local update algorithms that become 
+frozen or have very low tunnelling probability in a single topological sector~\cite{elser1997topological}. 
 The ability to explore multiple topological sectors ensures that:
 \begin{itemize}
     \item The simulation samples from the complete configuration space
     \item Physical observables are not biased by topological sector restrictions
-    \item The finite-volume effects are properly accounted for
 \end{itemize}
-
-The transitions between topological sectors shown in \cref{fig:Q_4_L} indicate that the HMC algorithm with the chosen parameters provides sufficient dynamics to overcome the topological barriers that would trap other sampling methods.
 
 \subsection{Autocorrelation Analysis}
 
 \begin{figure}
     \hspace*{-4cm}
     \includegraphics[width=1.6\textwidth]{autocorr_5_Lattice.png}
-    \caption{Autocorrelation of topological charge (left) and W(R,T) for R = 1, T = 1 in 5x5-Lattice (right)}
+    \caption{Autocorrelation of topological charge (left) and Wilson loop W(R,T) for R = 1, T = 1 in 5x5-Lattice (right)}
 \end{figure}
 
 One of the primary advantages of the Hybrid Monte Carlo algorithm over local update methods is the significantly reduced autocorrelation time. 
-\Cref{fig:Q_4_L} presents the autocorrelation function $\Gamma$ for two important observables:
-
-\subsubsection*{Topological Charge Autocorrelation (Left)}
-The autocorrelation of the topological charge decays rapidly to zero, 
-with the integrated autocorrelation time $\tau_{\text{int}}$ remaining relatively 
-small. This rapid decay indicates that measurements separated by a few 
-dozen trajectories are essentially statistically independent. 
-The short autocorrelation time is a direct consequence of 
-HMC's global update strategy, where each molecular dynamics 
-trajectory proposes correlated changes that quickly decorrelate the system state.
-
-\subsubsection*{Wilson Loop Autocorrelation (Right)}
-The W(R,T) observable (Wilson loop for spatial separation R = 1 and temporal extent T = 1) also exhibits relatively short autocorrelation times. 
-This is important for precision extraction of the interquark potential and confinement properties. 
-The rapid decorrelation allows for efficient statistical sampling with fewer trajectories required to achieve target statistical uncertainties.
-
-The short autocorrelation times demonstrated in this analysis validate the use of HMC for this problem and confirm that the computational resources are being used efficiently.
+\Cref{fig:Q_4_L} shows normalized autocorrelation function $\Gamma$ for topological charge  on left  and Wilson loop $W(R,T)$  on right. Both shows 
+significant low integrated autocorrelation time. For topological charge $\tau_{\text{int}} \sim 1.28$ and for Wilson loop $W(1,1)$ $\tau_{\text{int}} \sim 0.5$ 
+for 5x5-Lattice. Both the topological charge and the Wilson loop demonstrate
+the similar autocorrelation and integrated autocorrelation time for different lattice size.
 
 \subsection{Confinement Evidence}
 
@@ -77,27 +66,24 @@ The short autocorrelation times demonstrated in this analysis validate the use o
     \centering
     \includegraphics[width=\textwidth]{pot_V_T_1.png}
     \caption{Potential plotted as -ln(W(R,T)) with T = 1. The potential growes linearly showing confinement.}
+    \label{fig:pot_V_T_1}
 \end{figure}
 
-A defining characteristic of quantum chromodynamics and the Schwinger model is the phenomenon of confinement. 
+A defining characteristic of QCD and 2D-Schwinger model is the phenomenon of confinement. 
+The confinement in Schwinger model is due to Gauss' law in 1-Spatial dimension $\partial_x E \sim q$.
 Unlike free theories where the potential between charges grows logarithmically (or vanishes), confining theories exhibit a linear potential at large distances. 
-\Cref{fig:pot_V_T_1} demonstrates this confinement property by plotting the effective potential:
+In \cref{fig:pot_V_T_1} a linear fit to \cref{eq:V_R} demonstrates this confinement property by plotting the effective potential,
 
 \begin{equation}
+    \label{eq:V_R}
     V(R) = -\ln W(R,T) / T
 \end{equation}
 
-where $W(R,T)$ is the Wilson loop operator for a rectangular closed loop with spatial extent $R$ and temporal extent $T$.
+where $W(R,T)$ is the Wilson loop operator for a rectangular closed loop with spatial extent $R$ and temporal extent $T$~\cite{lecturenote}. 
+The linear growth of the potential with separation distance $R$ shows confinement predicted by the theory.
 
-The linear growth of the potential with separation distance $R$ is the hallmark signature of a confining theory. The slope of this potential, known as the string tension $\sigma$, 
-quantifies the energy cost of creating a quark-antiquark pair separated by distance $R$:
-
-\begin{equation}
-    V(R) \approx \sigma R + \text{const}
-\end{equation}
-
-This linear confinement behavior emerges naturally from the HMC simulations without any external constraint and is a consequence of the gauge-invariant dynamics of the Schwinger model. 
-The successful observation of confinement demonstrates that:
+This linear confinement behavior emerges naturally from the HMC simulations without any external constraint and is a consequence of the gauge-invariant 
+dynamics of the Schwinger model. The successful observation of confinement demonstrates that:
 \begin{itemize}
     \item The lattice formulation correctly preserves the essential physics
     \item The HMC algorithm efficiently samples the relevant gauge configurations
@@ -109,9 +95,7 @@ studied via lattice Monte Carlo methods, provides valuable insights for understa
 
 \newpage
 
-\subsection{Conclusions}
-
-\subsubsection{Summary of Findings}
+\section{Conclusions}
 
 The numerical simulations of the 2D Schwinger model using the Hybrid Monte Carlo algorithm have successfully demonstrated several key physical and computational results:
 
@@ -122,98 +106,23 @@ The numerical simulations of the 2D Schwinger model using the Hybrid Monte Carlo
     
     \item \textbf{Reduced Autocorrelation:} Both the topological charge and Wilson loop observables exhibit short autocorrelation times, indicating statistically independent measurements. This efficiency gain over local methods translates to faster convergence of statistical estimates and reduced computational cost for achieving target precision.
     
-    \item \textbf{Confinement Behavior:} The extracted interquark potential demonstrates clear linear growth with distance, confirming the confinement property expected from gauge theory. The string tension extracted from these simulations agrees with analytical predictions, validating the lattice formulation and HMC implementation.
+    \item \textbf{Confinement Behavior:} The extracted interquark potential demonstrates clear linear growth with distance, confirming the confinement property expected from Schwinger model. 
 \end{enumerate}
 
-\subsubsection{Limitations and Finite-Volume Effects}
 
-Despite the successful demonstration of HMC's capabilities, the simulations also reveal important limitations that become increasingly significant as the lattice volume increases:
-
-\paragraph{Growing Integration Errors in the Leapfrog Integrator}
-
-The leapfrog integrator, while symplectic and reversible, introduces systematic errors that scale as $\mathcal{O}(\epsilon^2)$ per time step. For finite step size $\epsilon$, the total error accumulated over a full trajectory of length $\tau$ becomes:
-
+Despite the successful demonstration of HMC's capabilities, the simulations also reveal important limitations that become increasingly significant as the lattice volume increases.
+The leapfrog integrator, introduces systematic errors that scale as $\mathcal{O}(\epsilon^2)$ per step. 
+For a fixed trajectory length $\tau$, the leapfrog (second-order) integrator
+induces a Hamiltonian violation whose typical size scales as
 \begin{equation}
-    \Delta H \sim \mathcal{O}(\epsilon^2 \tau / N_{\text{vol}})
+\Delta H_{\mathrm{rms}} \sim \sqrt{V}\,\epsilon^{2},
+\qquad
+\epsilon = \frac{\tau}{N_{\text{step}}}.
 \end{equation}
-
-where $N_{\text{vol}}$ is the lattice volume. As the volume increases:
-\begin{itemize}
-    \item The number of force evaluations per trajectory increases linearly with volume $N_{\text{vol}}$
-    \item The force calculation becomes more expensive (scaling as $\mathcal{O}(N_{\text{vol}})$ for naive implementations)
-    \item The effective trajectory length $\tau$ must remain large enough to explore the configuration space efficiently
-    \item Maintaining the same acceptance rate requires reducing the step size $\epsilon$ or shortening trajectories, both of which increase computational cost
-\end{itemize}
-
-As demonstrated in the simulations, moving from 4x4 to 5x5 and larger lattices requires finer step sizes to maintain acceptable Metropolis acceptance rates. The computational cost scales roughly as $\mathcal{O}(N^2)$ for two-dimensional systems (and worse for four dimensions), making large-volume simulations increasingly expensive. This volume scaling is one of the primary challenges in lattice QCD calculations.
-
-\paragraph{Finite-Volume Artifacts}
-
-The discrete lattice with finite extent introduces artifacts that deviate from continuum physics:
-\begin{itemize}
-    \item Periodic boundary conditions impose artificial periodicity on field fluctuations
-    \item The minimum available momentum scales as $p_{\min} = 2\pi / L$ where $L$ is the lattice extent
-    \item Finite-volume pion effects (in QCD) or screening effects modify observable values
-\end{itemize}
-
-Reliable extraction of continuum physics requires extrapolating results as $a \to 0$ (continuum limit) and $L \to \infty$ (infinite volume limit), further increasing computational requirements.
-
-\subsubsection{The 2D Schwinger Model as a Pedagogical Tool for LQCD}
-
-Despite these challenges, the 2D Schwinger model serves as an excellent introduction to lattice QCD methods for several compelling reasons:
-
-\paragraph{Reduced Computational Complexity}
-In two dimensions, the computational cost for simulating a lattice of size $L \times T$ scales as $\mathcal{O}(L^2 T)$, compared to $\mathcal{O}(L^3 T)$ in 3+1 dimensions (or worse with staggered or Wilson fermions). This allows for complete explorations of parameter space and detailed comparisons with analytical results on modest computational resources.
-
-\paragraph{Analytical Benchmarks}
-Unlike full QCD, the Schwinger model possesses known exact solutions and semi-analytic results in the continuum and infinite-volume limit. These provide trusted benchmarks for validating:
-\begin{itemize}
-    \item The lattice discretization and continuum limit
-    \item The correctness of force calculations in molecular dynamics
-    \item The proper implementation of boundary conditions and gauge fixing
-    \item The accuracy of pseudofermion methods
-\end{itemize}
-
-\paragraph{Conceptual Foundation}
-The Schwinger model retains the essential features of full QCD while remaining mathematically tractable:
-\begin{itemize}
-    \item \textbf{Gauge Invariance:} The $U(1)$ gauge structure mirrors non-abelian $SU(N)$ theories
-    \item \textbf{Confinement:} Despite being abelian, the model exhibits true confinement with string-like potentials
-    \item \textbf{Topological Structure:} Non-trivial topological sectors and the $\theta$-angle exist, just as in QCD
-    \item \textbf{Fermion Dynamics:} The pseudofermion determinant must be properly treated, paralleling QCD simulations
-\end{itemize}
-
-\paragraph{Algorithm Testing Ground}
-The Schwinger model is ideal for testing and tuning advanced algorithms before application to full QCD:
-\begin{itemize}
-    \item Parameter optimization (step size, trajectory length, preconditioning)
-    \item Algorithm development (improved integrators, multigrid solvers for linear systems)
-    \item Systematic error estimation and control
-    \item Exploration of alternative formulations (overlap fermions, domain wall fermions, etc.)
-\end{itemize}
-
-\paragraph{Bridge to Full QCD}
-The methodology developed for the Schwinger model translates directly to higher-dimensional theories:
-\begin{itemize}
-    \item The lattice action formulation straightforwardly generalizes to $SU(3)$ gauge groups
-    \item Molecular dynamics integrators designed for Schwinger can be directly applied to QCD
-    \item Force calculation routines follow identical algorithmic patterns
-    \item Metropolis acceptance procedures are identical
-\end{itemize}
-
-Thus, mastery of the Schwinger model simulation provides a complete introduction to the computational techniques of realistic lattice QCD, while remaining simple enough for detailed theoretical understanding and validation.
-
-\subsubsection{Future Directions}
-
-Extensions of this work could include:
-\begin{itemize}
-    \item Implementation of improved integrators (e.g., Omelyan-Folomeev-Solovyan integrator) to reduce integration errors
-    \item Multigrid or other advanced linear solvers to reduce the computational cost of pseudofermion force calculations
-    \item Systematic continuum and infinite-volume extrapolations to compare with exact Schwinger model results
-    \item Extension to dynamical fermions with multiple flavors
-    \item Expansion to fully 3+1 dimensional lattice QCD with realistic quark masses
-\end{itemize}
-
-The simulations presented in this project successfully demonstrate that HMC is a powerful and efficient algorithm for lattice gauge theory, with the Schwinger model serving as an ideal testing ground for understanding both the physics of gauge theories and the computational methods essential for lattice QCD.
-
-
+Consequently, increasing the lattice volume $V$ leads to larger integration
+errors and a reduced Metropolis acceptance probability.
+To maintain an acceptance rate above $50\%$, the step size $\epsilon$ must be
+decreased, which in practice requires increasing the number of leapfrog steps
+$N_{\text{step}}$ at fixed $\tau$.
+This significantly increases the computational cost, since each additional
+molecular-dynamics step requires an evaluation of the  force.

@@ -185,6 +185,9 @@ def W(data,L,T, tau = 0.5):
     pot = np.mean(W,0)
     tau = integrated_autocorrelation_time(W[:,2],10)
 
+    if tau < 0.5:
+        tau = 0.5
+
     pot_err = np.sqrt( 2 * tau * np.var(W,0) / N)
 
     return R, pot, pot_err
